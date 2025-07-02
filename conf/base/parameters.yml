@@ -1,0 +1,12 @@
+# This is a boilerplate parameters file 'parameters'
+# generated using Kedro 0.19.13
+#
+# Documentation for this file format can be found in "Parameters"
+# Link: https://docs.kedro.org/en/stable/kedro_project_setup/configuration.html#parameters
+
+model_params:
+  input_size: 1
+  n_kernels: 6
+  output_size: 10
+  epochs: 10 # Reduced for quick testing
+  learning_rate: 0.001

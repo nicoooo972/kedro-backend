@@ -1,0 +1,26 @@
+# This is a boilerplate catalog file 'catalog'
+# generated using Kedro 0.19.13
+#
+# Documentation for this file format can be found in "The Data Catalog"
+# Link: https://docs.kedro.org/en/stable/data/data_catalog.html
+
+train_loader:
+  type: kedro.io.MemoryDataset
+  # In-memory dataset for the training data loader
+
+test_loader:
+  type: kedro.io.MemoryDataset
+  # In-memory dataset for the test data loader
+
+permutation:
+  type: kedro.io.MemoryDataset
+  # In-memory dataset for the permutation tensor
+
+trained_model:
+  type: kedro.io.MemoryDataset
+  # In-memory dataset for the trained model object
+
+packaged_model:
+  type: kedro_datasets.pickle.PickleDataset
+  filepath: data/06_models/convnet.pt
+  versioned: true

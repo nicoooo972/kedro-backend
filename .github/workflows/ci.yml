@@ -80,15 +80,40 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
-  deploy-production:
-    name: 🚀 Deploy to Production
+  run-production-training:
+    name: 🚀 Run Production Training & Create Artifact
     runs-on: ubuntu-latest
     needs: build-and-push
-    # This job also only runs on push to main, but the dependency on build-and-push already handles this.
-    environment: production
+    # This job only runs on push to main, dependency ensures this
     steps:
-    - name: 'Simulate deployment'
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create artifacts directory
+      run: mkdir -p model_artifact
+
+    - name: Run production training pipeline
       run: |
-        echo "🚀 Deploying to production..."
-        echo "A new training image has been published to the registry: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
-        echo "The next step would be to trigger a new training run on the production infrastructure using this image." 
+        docker run --rm \
+          -v ${{ github.workspace }}/model_artifact:/home/kedro_docker/data/06_models \
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+    - name: Upload model artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: trained-model-convnet
+        path: model_artifact/convnet.pt
+
+  notify-deployment:
+    name: ✅ Notify Model Ready for Deployment
+    runs-on: ubuntu-latest
+    needs: run-production-training
+    steps:
+    - name: 'Notify that a new model is ready'
+      run: |
+        echo "✅ A new production model 'convnet.pt' has been trained and is available as a workflow artifact."
+        echo "The next step would be for the 'mnist-deployment' project to fetch this model and deploy the serving API." 

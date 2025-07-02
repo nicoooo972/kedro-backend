@@ -1,10 +1,14 @@
-name: 🚀 Kedro Training Pipeline CI
+name: 🚀 Kedro Training Pipeline CI/CD
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   lint:
@@ -18,12 +22,6 @@ jobs:
       with:
         python-version: '3.9'
         
-    - name: Cache dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
-        
     - name: Install dependencies
       run: |
         pip install black flake8
@@ -34,15 +32,63 @@ jobs:
     - name: Linting
       run: flake8 src/ --max-line-length=88 --ignore=E203,W503
 
-  run-pipeline:
-    name: 🐳 Build Docker & Run Training
+  test-pipeline-execution:
+    name: 🧪 Test Pipeline Execution
     runs-on: ubuntu-latest
     needs: [lint]
     steps:
     - uses: actions/checkout@v4
     
-    - name: Build Docker image
-      run: docker build -t mnist-kedro-ci .
+    - name: Build Docker image for testing
+      run: docker build -t mnist-kedro-ci-test .
       
     - name: Run Kedro pipeline
-      run: docker run --rm mnist-kedro-ci 
+      run: docker run --rm mnist-kedro-ci-test
+
+  build-and-push:
+    name: 🐳 Build & Push Production Image
+    runs-on: ubuntu-latest
+    needs: [test-pipeline-execution]
+    # Only run on push events to the main branch
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Extract metadata for Docker
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=raw,value=latest,enable=true
+          
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+
+  deploy-production:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    # This job also only runs on push to main, but the dependency on build-and-push already handles this.
+    environment: production
+    steps:
+    - name: 'Simulate deployment'
+      run: |
+        echo "🚀 Deploying to production..."
+        echo "A new training image has been published to the registry: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+        echo "The next step would be to trigger a new training run on the production infrastructure using this image." 

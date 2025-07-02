@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=python:3.9-slim
+ARG BASE_IMAGE=python:3.11-slim
 FROM $BASE_IMAGE
 
 WORKDIR /home/kedro_docker
@@ -9,7 +9,7 @@ COPY src/ src/
 COPY conf/ conf/
 
 # Install the project and its dependencies
-RUN pip install  .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Set the entrypoint
 ENTRYPOINT ["kedro"]

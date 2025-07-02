@@ -10,3 +10,11 @@ model_options:
     - iata_approved
     - company_rating
     - review_scores_rating
+
+# Hyperparameters for the model
+model_params:
+  input_size: 1
+  n_kernels: 6
+  output_size: 10
+  epochs: 10
+  learning_rate: 0.001

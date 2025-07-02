@@ -13,8 +13,8 @@ test_loader:
   # In-memory dataset for the test data loader
 
 permutation:
-  type: kedro.io.MemoryDataset
-  # In-memory dataset for the permutation tensor
+  type: kedro_datasets.pickle.PickleDataset
+  filepath: data/07_model_input/permutation.pkl
 
 trained_model:
   type: kedro.io.MemoryDataset
@@ -23,4 +23,3 @@ trained_model:
 packaged_model:
   type: kedro_datasets.pickle.PickleDataset
   filepath: data/06_models/convnet.pt
-  versioned: true

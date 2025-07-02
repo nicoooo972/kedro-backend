@@ -9,7 +9,7 @@ COPY src/ src/
 COPY conf/ conf/
 
 # Install the project and its dependencies
-RUN pip install -r requirements.txt
+RUN pip install .
 
 # Set the entrypoint
 ENTRYPOINT ["kedro"]

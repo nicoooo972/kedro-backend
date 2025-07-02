@@ -6,6 +6,7 @@ generated using Kedro 0.19.13
 import torch
 from torchvision import datasets, transforms
 
+
 def create_dataloaders():
     """
     Downloads the MNIST dataset and creates DataLoader objects for train and test sets.
@@ -27,4 +28,4 @@ def create_dataloaders():
         shuffle=True,
     )
 
-    return train_loader, test_loader 
+    return train_loader, test_loader

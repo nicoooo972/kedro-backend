@@ -35,4 +35,4 @@ def create_pipeline(**kwargs) -> Pipeline:
                 name="package_model_node",
             ),
         ]
-    ) 
+    )

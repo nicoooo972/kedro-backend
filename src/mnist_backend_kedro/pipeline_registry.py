@@ -1,4 +1,5 @@
 """Project pipelines."""
+
 from typing import Dict
 
 from kedro.pipeline import Pipeline, pipeline
@@ -19,4 +20,4 @@ def register_pipelines() -> Dict[str, Pipeline]:
         "dp": data_preparation_pipeline,
         "train": training_pipeline,
         "__default__": data_preparation_pipeline + training_pipeline,
-    } 
+    }

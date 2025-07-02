@@ -2,6 +2,7 @@
 This is a boilerplate pipeline 'training'
 generated using Kedro 0.19.13
 """
+
 import torch
 import torch.nn.functional as F
 import mlflow
@@ -10,11 +11,15 @@ from typing import Dict, Any
 
 from mnist_backend_kedro.model.convnet import ConvNet
 
+
 def create_permutation():
     """Create a fixed permutation for the MNIST dataset."""
     return torch.randperm(784)
 
-def train_model(train_loader: Any, permutation: torch.Tensor, parameters: Dict[str, Any]):
+
+def train_model(
+    train_loader: Any, permutation: torch.Tensor, parameters: Dict[str, Any]
+):
     """Trains the model.
 
     Args:
@@ -32,9 +37,9 @@ def train_model(train_loader: Any, permutation: torch.Tensor, parameters: Dict[s
     model = ConvNet(
         input_size=parameters["input_size"],
         n_kernels=parameters["n_kernels"],
-        output_size=parameters["output_size"]
+        output_size=parameters["output_size"],
     )
-    
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     perm = permutation.to(device)
     model.to(device)
@@ -64,12 +69,15 @@ def train_model(train_loader: Any, permutation: torch.Tensor, parameters: Dict[s
                     f"  Batch: {batch_idx}/{len(train_loader)} | "
                     f"Loss: {loss_val:.4f}"
                 )
-                mlflow.log_metric("train_loss", loss_val, step=epoch * len(train_loader) + batch_idx)
-    
+                mlflow.log_metric(
+                    "train_loss", loss_val, step=epoch * len(train_loader) + batch_idx
+                )
+
     mlflow.pytorch.log_model(model, "model")
     mlflow.end_run()
-    
+
     return model
+
 
 def evaluate_model(model: torch.nn.Module, test_loader: Any, permutation: torch.Tensor):
     """Calculates and logs the loss and accuracy of the model on the test set.
@@ -106,16 +114,18 @@ def evaluate_model(model: torch.nn.Module, test_loader: Any, permutation: torch.
         f"Accuracy: {correct}/{len(test_loader.dataset)} "
         f"({accuracy:.2f}%)"
     )
-    
+
     # Log metrics to MLflow
     # This assumes we are in an active MLflow run context.
     # A better way would be to pass the run_id, but for simplicity...
     with mlflow.start_run(run_id=mlflow.last_active_run().info.run_id):
-         mlflow.log_metric("test_loss", test_loss)
-         mlflow.log_metric("test_accuracy", accuracy)
+        mlflow.log_metric("test_loss", test_loss)
+        mlflow.log_metric("test_accuracy", accuracy)
 
 
-def package_model(model: torch.nn.Module, permutation: torch.Tensor, parameters: Dict[str, Any]):
+def package_model(
+    model: torch.nn.Module, permutation: torch.Tensor, parameters: Dict[str, Any]
+):
     """Packages the model and permutation into a single file.
 
     Args:
@@ -130,4 +140,4 @@ def package_model(model: torch.nn.Module, permutation: torch.Tensor, parameters:
         "input_size": parameters["input_size"],
         "output_size": parameters["output_size"],
     }
-    return model_data 
+    return model_data
